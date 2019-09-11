@@ -4,12 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorGray"
+    android:backgroundTint="#00817474"
     tools:context=".ParkingSpace">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/colorGray">
 
         <TextView
             android:id="@+id/remaining_space"
@@ -20,6 +23,7 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
             android:text="불러오는 중입니다..."
+            android:textColor="@android:color/background_light"
             android:textSize="25sp"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout"
             app:layout_constraintEnd_toEndOf="parent"
@@ -41,7 +45,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
-
 
 
                 <ImageView
@@ -88,6 +91,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/space" />
+
                 <ImageView
                     android:id="@+id/red_car"
                     android:layout_width="wrap_content"
@@ -95,5 +99,23 @@
                     android:src="@drawable/red_car" />
             </FrameLayout>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/danger"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:text="주차장에서 사이렌 소리가 감지됩니다. cctv 확인 부탁드립니다. "
+            android:textColor="@android:color/background_light"
+            android:textSize="30sp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+            app:layout_constraintVertical_bias="0.25" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

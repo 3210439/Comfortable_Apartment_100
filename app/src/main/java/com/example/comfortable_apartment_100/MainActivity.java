@@ -1,8 +1,13 @@
 package com.example.comfortable_apartment_100;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.media.ToneGenerator;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -22,6 +27,7 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -48,15 +54,13 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
-    ListView listView;
-    ImageView sendBtn;
-    EditText msgEdit;
-
     boolean flagConnection = true;
     boolean isConnected = false;
     boolean flagRead = true;
     TextView tempertureText;
     static ArrayList<Fragment> fragments;
+
+    static int siren=0;
 
     //Handler writeHandler;
     boolean isBinOK = false;
@@ -67,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     SocketThread st;
     ReadThread rt;
 
-    String serverIp="192.168.0.120";
+    String serverIp="192.168.43.177";
     int serverPort=9874;
 
     private final String dbName = "webnautes";
@@ -75,15 +79,14 @@ public class MainActivity extends AppCompatActivity {
 
     private String names[];
     {
-        names = new String[]{"input", "output", "input", "output", "input", "output"
-                , "input", "output", "input"};
+        names = new String[]{"물탱크 청소날", "아파트 소독 일정", "아파트 마을 회관 정기모임", "아파트 주민 단체 등산모임", "주민참여예산 사업 선정을 위한 주민투표",
+                "깨끗한 아파트 만들기 켐페인", "아파트 주민 인사 켐페인"};
     }
 
     private final String reportDays[];
     {
-        reportDays = new String[]{"19.08.04_12:00", "19.08.04_12:01", "19.08.04_12:02",
-                "19.08.04_12:03", "19.08.04_12:04", "19.08.04_12:05", "19.08.04_12:06",
-                "19.08.04_12:07", "19.08.04_12:08"};
+        reportDays = new String[]{"19.08.01_12:00", "19.08.10_11:00", "19.08.17_13:00",
+                "19.08.25_15:00", "19.08.31_12:00", "19.09.14_11:30", "19.09.24_12:00",};
     }
 
     ArrayList<HashMap<String, String>> boxStateList;
@@ -129,9 +132,19 @@ public class MainActivity extends AppCompatActivity {
 
                 showToast("서버 연결 실패");
             }else if(msg.what==100){
-                showToast((String) msg.obj);
+//                showToast((String) msg.obj);
                 String str = (String)msg.obj;
                 String[] arrayFromServer =  str.split("&");
+                int noise = Integer.parseInt(arrayFromServer[2]);
+
+                if(noise > 70)
+                {
+                    showToast("방에서 감지되는 소리가 너무 큽니다. 조금만 조용히 해주세요!");
+                    ToneGenerator tone = new ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME);
+                    tone.startTone(ToneGenerator.TONE_DTMF_S, 500);
+
+                    siren +=1;
+                }
                 HomeFragment.string = arrayFromServer;
                 ParkingSpace.car_array = arrayFromServer;
                 ParkingSpace.carThread ct = new ParkingSpace.carThread();
@@ -142,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,24 +179,8 @@ public class MainActivity extends AppCompatActivity {
                     + " (name VARCHAR(20), reportDay VARCHAR(20) );");
 
             //테이블이 존재하는 경우 기존 데이터를 지우기 위해서 사용합니다.
-            sampleDB.execSQL("DELETE FROM " + tableName  );
+//            sampleDB.execSQL("DELETE FROM " + tableName  );
 
-            //새로운 데이터를 테이블에 집어넣습니다..
-            for (int i=0; i<names.length; i++ ) {
-
-                if(names[i].equals("input")) {
-                    sampleDB.execSQL("INSERT INTO " + tableName
-                            + " (name, reportDay)  Values ('" + "택배 보관함에 택배가 있습니다." + "'" +
-                            ", '" + reportDays[i] + "');");
-                }
-                else
-                {
-                    sampleDB.execSQL("INSERT INTO " + tableName
-                            + " (name, reportDay)  Values ('" + "택배를 수령하셨습니다." + "'" +
-                            ", '" + reportDays[i] + "');");
-                }
-            }
-            sampleDB.close();
 
             SQLiteDatabase ReadDB = this.openOrCreateDatabase(dbName, MODE_PRIVATE, null);
 
@@ -190,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
             //SELECT문을 사용하여 테이블에 있는 데이터를 가져옵니다..
             Cursor c = ReadDB.rawQuery("SELECT * FROM " + tableName, null);
 
-            if (c != null) {
+            if (c != null && c.moveToFirst()) {
 
 
                 if (c.moveToFirst()) {
@@ -213,7 +211,41 @@ public class MainActivity extends AppCompatActivity {
                     Collections.reverse(boxStateList);
                 }
             }
+            else
+            {
 
+
+                //새로운 데이터를 테이블에 집어넣습니다..
+                for (int i=0; i<names.length; i++ ) {
+                        sampleDB.execSQL("INSERT INTO " + tableName
+                                + " (name, reportDay)  Values ('" + names[i] + "'" +
+                                ", '" + reportDays[i] + "');");
+
+                }
+                Cursor d = ReadDB.rawQuery("SELECT * FROM " + tableName, null);
+
+                if (d.moveToFirst()) {
+                    do {
+
+                        //테이블에서 두개의 컬럼값을 가져와서
+                        String Name = d.getString(d.getColumnIndex("name"));
+                        String reportDay = d.getString(d.getColumnIndex("reportDay"));
+
+                        //HashMap에 넣습니다.
+                        HashMap<String,String> boxStates = new HashMap<String,String>();
+
+                        boxStates.put(TAG_NAME,Name);
+                        boxStates.put(TAG_reportDay,reportDay);
+
+                        //ArrayList에 추가합니다..
+                        boxStateList.add(boxStates);
+
+                    } while (d.moveToNext());
+                    Collections.reverse(boxStateList);
+                }
+            }
+
+            sampleDB.close();
             ReadDB.close();
 
         } catch (SQLiteException se) {
@@ -300,7 +332,6 @@ public class MainActivity extends AppCompatActivity {
                         socket = new Socket();
                         SocketAddress remoteAddr = new InetSocketAddress(serverIp, serverPort);
                         socket.connect(remoteAddr, 10000);
-                        Log.d("ClientThread","배룩스 시스템 성공");
                         isBinOK=true;
 
                         bin = new BufferedInputStream(socket.getInputStream());

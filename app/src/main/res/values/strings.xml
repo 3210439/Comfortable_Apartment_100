@@ -2,7 +2,7 @@
     <string name="app_name">편리한 아파트 생활</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">주차확인</string>
-    <string name="title_notifications">택배확인</string>
+    <string name="title_notifications">일정확인</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

@@ -33,6 +33,7 @@ public class ParkingSpace extends Fragment {
     static ImageView car2;
     static ImageView car3;
     static TextView remaining;
+    static TextView danger;
     private static int[] howManyCar;
 
     // TODO: Rename and change types of parameters
@@ -83,6 +84,7 @@ public class ParkingSpace extends Fragment {
         car2 = (ImageView)getView().findViewById(R.id.blue_car);
         car3 = (ImageView)getView().findViewById(R.id.red_car);
         remaining = (TextView)getView().findViewById(R.id.remaining_space);
+        danger = (TextView)getView().findViewById(R.id.danger);
         mMainHandler = new Handler(Looper.getMainLooper());
         howManyCar= new int[3];
 //        car_array[3] = "0";
@@ -133,6 +135,15 @@ public class ParkingSpace extends Fragment {
                             //car_count = howManyCar[0] + howManyCar[1] + howManyCar[2];
                             remaining.setText((howManyCar[0] + howManyCar[1] + howManyCar[2]) + "자리가 남았습니다.");
 
+                            if(MainActivity.siren >=3)
+                            {
+                                danger.setVisibility(View.VISIBLE);
+                                MainActivity.siren = 0;
+                            }
+                            if(MainActivity.siren == 2)
+                            {
+                                danger.setVisibility(View.INVISIBLE);
+                            }
                             car1.invalidate();
                             car2.invalidate();
                             car3.invalidate();
@@ -204,9 +215,9 @@ public class ParkingSpace extends Fragment {
             car_count = howManyCar[0] + howManyCar[1] + howManyCar[2];
             remaining.setText(car_count+"자리가 남았습니다.");
 
-            car1.invalidate();
-            car2.invalidate();
-            car3.invalidate();
+//            car1.invalidate();
+//            car2.invalidate();
+//            car3.invalidate();
 
         }
     }
